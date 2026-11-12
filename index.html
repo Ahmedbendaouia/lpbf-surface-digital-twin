@@ -1,0 +1,1273 @@
+<meta charset="utf-8">
+<title>AlSi7Mg Surface Twin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF0F2; --surface:#FFFFFF; --surface-2:#F5F6F8; --border:#D5D9DF; --border-strong:#B9C0C9;
+    --text:#13171C; --text-2:#4E5763; --muted:#7C8591; --grid:#E6E8EC;
+    --accent:#5B4FCF; --accent-soft:#E9E7FA;
+    --min:#2a78d6; --avg:#1baf7a; --max:#eb6834;
+    --div-neg:#2a78d6; --div-mid:#c9c8c4; --div-pos:#e34948;
+    --warn:#8A5A00; --warn-soft:#F6EBCF; --good:#0f7a2f;
+    --viewport:#0E1115; --viewport-ink:#DDE3EA; --viewport-muted:#8B95A1;
+    --shadow:0 1px 2px rgba(19,23,28,.06), 0 6px 18px rgba(19,23,28,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --bg:#0B0E12; --surface:#151A20; --surface-2:#1B2129; --border:#2A313B; --border-strong:#3A434F;
+      --text:#E8EBEF; --text-2:#A9B2BD; --muted:#6F7884; --grid:#232931;
+      --accent:#A39BF5; --accent-soft:#26233F;
+      --min:#3987e5; --avg:#199e70; --max:#d95926;
+      --div-neg:#3987e5; --div-mid:#6b6b67; --div-pos:#e66767;
+      --warn:#E0B550; --warn-soft:#352C16; --good:#5cc27f;
+      --shadow:0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#0B0E12; --surface:#151A20; --surface-2:#1B2129; --border:#2A313B; --border-strong:#3A434F;
+    --text:#E8EBEF; --text-2:#A9B2BD; --muted:#6F7884; --grid:#232931;
+    --accent:#A39BF5; --accent-soft:#26233F;
+    --min:#3987e5; --avg:#199e70; --max:#d95926;
+    --div-neg:#3987e5; --div-mid:#6b6b67; --div-pos:#e66767;
+    --warn:#E0B550; --warn-soft:#352C16; --good:#5cc27f;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; font-size:14px; line-height:1.5; padding-inline:16px; padding-block:20px 48px}
+  h1,h2,h3{margin:0; text-wrap:balance; letter-spacing:-.01em}
+  .mono, .num{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric:tabular-nums}
+  button{font:inherit; color:inherit}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .wrap{max-width:1360px; margin:0 auto; display:flex; flex-direction:column; gap:16px}
+
+  header.top{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:10px 24px}
+  header.top h1{font-size:1.55rem; font-weight:700}
+  header.top .sub{color:var(--text-2); margin-top:2px; max-width:72ch}
+  .keys{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:.82rem; color:var(--text-2)}
+  .key{display:inline-flex; align-items:center; gap:6px}
+  .dot{width:10px; height:10px; border-radius:50%; flex:none}
+
+  .app{display:grid; grid-template-columns:300px minmax(0,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){ .app{grid-template-columns:1fr} }
+  .rail{display:flex; flex-direction:column; gap:12px}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; box-shadow:var(--shadow)}
+  .card h2{font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600; margin-bottom:10px; display:flex; justify-content:space-between; gap:8px}
+  .card h2 .r{color:var(--text-2); text-transform:none; letter-spacing:0; font-weight:500}
+
+  .plate{display:grid; grid-template-columns:repeat(5,1fr); gap:5px}
+  .plate-seg{display:flex; flex-wrap:wrap; gap:4px; margin:-4px 0 10px; border:0}
+  .plate-seg button{font-family:"IBM Plex Mono",monospace; font-size:.72rem; padding:3px 8px; border-radius:5px; border:1px solid var(--border); background:var(--surface); color:var(--text-2); cursor:pointer}
+  .plate-seg button.on{background:var(--accent); border-color:var(--accent); color:var(--surface)}
+  .cell{aspect-ratio:1; max-width:100%; border-radius:6px; border:1px solid var(--border); background:var(--surface-2); display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:"IBM Plex Mono",monospace; font-size:.72rem; font-weight:600; color:var(--muted); gap:1px; padding:0; position:relative}
+  .cell .lv{font-size:.58rem; font-weight:400}
+  .cell .bar{position:absolute; left:6px; right:6px; bottom:4px; height:3px; border-radius:2px; opacity:.35}
+  .cell.measured{cursor:pointer; color:var(--text); border-color:var(--border-strong); background:var(--surface)}
+  .cell.measured .bar{opacity:1}
+  .cell.measured:hover{border-color:var(--accent)}
+  .cell.sel{outline:2px solid var(--accent); outline-offset:1px}
+  .cell:disabled{cursor:default}
+  .note{font-size:.76rem; color:var(--muted); margin-top:8px}
+
+  svg.face{width:100%; height:auto; display:block}
+  svg.face .spot{cursor:pointer}
+  svg.face text{font-family:"IBM Plex Mono",monospace}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  .stat{background:var(--surface-2); border-radius:7px; padding:7px 9px; min-width:0}
+  .stat .k{font-size:.66rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+  .stat .v{font-family:"IBM Plex Mono",monospace; font-size:1.02rem; font-weight:600; font-variant-numeric:tabular-nums}
+  .stat .u{font-size:.7rem; color:var(--muted); font-weight:400; margin-left:2px}
+  .flag{display:flex; gap:6px; align-items:flex-start; font-size:.76rem; color:var(--warn); background:var(--warn-soft); border-radius:6px; padding:6px 8px; margin-top:10px}
+  .flag[hidden]{display:none}
+
+  .chips{display:flex; flex-wrap:wrap; gap:4px}
+  .chip{font-family:"IBM Plex Mono",monospace; font-size:.72rem; padding:3px 7px; border-radius:5px; border:1px solid var(--border); background:var(--surface); cursor:pointer}
+  .chip:hover{border-color:var(--accent)}
+  .chip.sel{background:var(--accent); border-color:var(--accent); color:var(--surface)}
+  .chip:disabled{opacity:.35; cursor:default; text-decoration:line-through}
+  .chips-label{font-size:.7rem; color:var(--muted); margin:8px 0 4px}
+
+  .stage{display:flex; flex-direction:column; gap:12px; min-width:0}
+  .viewport{position:relative; height:clamp(380px, 60vh, 640px); background:var(--viewport); border-radius:12px; overflow:hidden; border:1px solid #1f262f}
+  .viewport canvas{display:block; width:100%; height:100%; touch-action:none}
+  .vp-top{position:absolute; left:12px; right:12px; top:10px; display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:flex-start; pointer-events:none}
+  .vp-top > *{pointer-events:auto}
+  .crumbs{display:flex; gap:2px; background:rgba(14,17,21,.78); border:1px solid #2a323c; border-radius:8px; padding:3px}
+  .crumbs button{background:none; border:0; color:var(--viewport-muted); font-size:.8rem; padding:4px 9px; border-radius:6px; cursor:pointer}
+  .crumbs button.on{color:#fff; background:#2a3340}
+  .crumbs button:disabled{opacity:.4; cursor:default}
+  .vp-ctl{display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:rgba(14,17,21,.78); border:1px solid #2a323c; border-radius:8px; padding:5px 8px; color:var(--viewport-ink); font-size:.76rem}
+  .seg{display:inline-flex; border:1px solid #333d49; border-radius:6px; overflow:hidden}
+  .seg button{background:none; border:0; color:var(--viewport-muted); padding:3px 8px; cursor:pointer; font-size:.74rem}
+  .seg button.on{background:#3a3470; color:#fff}
+  .vp-ctl label{display:inline-flex; align-items:center; gap:6px; color:var(--viewport-muted)}
+  .vp-ctl input[type=range]{width:92px; accent-color:#A39BF5}
+  .vp-ctl .val{font-family:"IBM Plex Mono",monospace; color:var(--viewport-ink); min-width:3.2ch}
+  .vp-bottom{position:absolute; left:12px; right:12px; bottom:10px; display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:flex-end; pointer-events:none}
+  .vp-legend{background:rgba(14,17,21,.78); border:1px solid #2a323c; border-radius:8px; padding:6px 9px; color:var(--viewport-muted); font-size:.72rem; pointer-events:auto; max-width:min(100%, 420px)}
+  .ramp{height:8px; width:150px; border-radius:4px; margin:4px 0 2px; background:linear-gradient(90deg,#3987e5,#6b6b67,#e66767)}
+  .ramp-l{display:flex; justify-content:space-between; width:150px; font-family:"IBM Plex Mono",monospace}
+  .labels{position:absolute; inset:0; pointer-events:none}
+  .lbl3d{position:absolute; transform:translate(-50%,-100%); font-family:"IBM Plex Mono",monospace; font-size:.7rem; color:#fff; background:rgba(14,17,21,.8); border:1px solid #39424e; border-radius:4px; padding:1px 5px; white-space:nowrap}
+  .lbl3d .sw{display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px}
+  .vp-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--viewport-muted); font-size:.9rem}
+  .play{background:#3a3470; color:#fff; border:0; border-radius:6px; padding:4px 10px; cursor:pointer; font-size:.76rem}
+  .play:hover{background:#4a438a}
+
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); overflow:hidden}
+  .tabs{display:flex; flex-wrap:wrap; gap:2px; border-bottom:1px solid var(--border); padding:6px 8px 0; align-items:flex-end; justify-content:space-between}
+  .tabs .tl{display:flex; flex-wrap:wrap; gap:2px}
+  .tab{background:none; border:0; border-bottom:2px solid transparent; padding:8px 12px; cursor:pointer; color:var(--text-2); font-weight:500}
+  .tab.on{color:var(--text); border-bottom-color:var(--accent)}
+  .lc{display:flex; align-items:center; gap:8px; padding:6px 4px; font-size:.78rem; color:var(--text-2)}
+  .lc .seg{border-color:var(--border)}
+  .lc .seg button{color:var(--text-2); font-size:.76rem; padding:3px 9px}
+  .lc .seg button.on{background:var(--accent); color:var(--surface)}
+  .tabpane{padding:14px 16px 16px}
+  .tabpane[hidden]{display:none}
+  .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between}
+  .steps{display:flex; flex-wrap:wrap; gap:4px}
+  .stepbtn{border:1px solid var(--border); background:var(--surface); border-radius:6px; padding:4px 10px; cursor:pointer; font-size:.8rem; color:var(--text-2)}
+  .stepbtn .n{font-family:"IBM Plex Mono",monospace; color:var(--muted); margin-right:5px}
+  .stepbtn.on{border-color:var(--accent); color:var(--text); background:var(--accent-soft)}
+  .btn{border:1px solid var(--accent); background:var(--accent); color:var(--surface); border-radius:6px; padding:4px 12px; cursor:pointer; font-size:.8rem; font-weight:500}
+  .btn.ghost{background:none; color:var(--accent)}
+  .explain{color:var(--text-2); font-size:.86rem; max-width:90ch; margin:10px 0 6px; min-height:2.6em}
+  .chart{width:100%; height:290px; display:block}
+  .chart.sm{height:250px}
+  .lineread{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:.8rem; color:var(--text-2); margin-top:8px}
+  .lineread b{font-family:"IBM Plex Mono",monospace; color:var(--text); font-weight:600}
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px}
+  .ctitle{font-weight:600; font-size:.9rem}
+  .csub{color:var(--muted); font-size:.78rem; margin-bottom:4px}
+  .clegend{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:.78rem; color:var(--text-2); margin:4px 0 2px}
+  .ring{width:10px; height:10px; border-radius:50%; border:2px solid var(--text-2); flex:none}
+  .fill{width:10px; height:10px; border-radius:50%; background:var(--text-2); flex:none}
+  .tablewrap{overflow-x:auto; border:1px solid var(--border); border-radius:8px}
+  table{border-collapse:collapse; width:100%; font-size:.8rem; background:var(--surface)}
+  th{font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-2); text-align:right; padding:8px 10px; background:var(--surface-2); border-bottom:1px solid var(--border); white-space:nowrap}
+  td{padding:6px 10px; border-bottom:1px solid var(--border); text-align:right; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap}
+  th:nth-child(-n+3), td:nth-child(-n+3){text-align:left}
+  tr:last-child td{border-bottom:0}
+  tr.click{cursor:pointer} tr.click:hover td{background:var(--surface-2)}
+  .bad{color:var(--warn)}
+  .progress{font-size:.8rem; color:var(--muted)}
+
+  .about{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+  .about .card p{margin:0; color:var(--text-2); font-size:.84rem; max-width:65ch}
+  .about .card h3{font-size:.92rem; margin-bottom:6px}
+
+  #tip{position:fixed; z-index:20; pointer-events:none; background:var(--surface); color:var(--text); border:1px solid var(--border-strong); border-radius:7px; padding:6px 9px; font-size:.78rem; box-shadow:var(--shadow); max-width:260px}
+  #tip .t{font-weight:600; margin-bottom:2px}
+  #tip .m{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>AlSi7Mg Surface Twin</h1>
+      <div class="sub" id="subtitle">LPBF plate P001 &middot; top&#8209;surface roughness from the digital microscope</div>
+    </div>
+    <div class="keys" id="keys"></div>
+  </header>
+
+  <div class="app">
+    <aside class="rail">
+      <div class="card">
+        <h2><span id="plateTitle">Plate P001</span> <span class="r">recoater side at top</span></h2>
+        <div class="seg plate-seg" id="plateSeg" hidden></div>
+        <div class="plate" id="plate"></div>
+        <div class="note">Measured cubes are clickable. Grey cubes have no data yet.</div>
+      </div>
+      <div class="card">
+        <h2>Top face <span class="r" id="faceTitle">&mdash;</span></h2>
+        <svg class="face" id="face" viewBox="-0.8 -1.6 13.6 15.4" role="img" aria-label="Top face of the cube with the measurement spots"></svg>
+      </div>
+      <div class="card">
+        <h2>Spot <span class="r mono" id="spotTitle">&mdash;</span></h2>
+        <div class="stats" id="stats"></div>
+        <div class="flag" id="spotFlag" hidden><span aria-hidden="true">&#9888;</span><span id="spotFlagText"></span></div>
+        <div class="chips-label">Horizontal profiles (along image x)</div>
+        <div class="chips" id="chipsH"></div>
+        <div class="chips-label">Vertical profiles (along recoater travel)</div>
+        <div class="chips" id="chipsV"></div>
+      </div>
+    </aside>
+
+    <section class="stage">
+      <div class="viewport" id="vp">
+        <canvas id="gl" aria-label="3D view of the build plate, cube and measured surface"></canvas>
+        <div class="labels" id="labels"></div>
+        <div class="vp-msg" id="vpMsg">Loading measured profiles&hellip;</div>
+        <div class="vp-top">
+          <div class="crumbs" role="tablist" aria-label="Zoom level">
+            <button id="cPlate" class="on">Plate</button>
+            <button id="cCube">Cube</button>
+            <button id="cSpot">Spot</button>
+          </div>
+          <div class="vp-ctl">
+            <span>Skin</span>
+            <div class="seg" id="skinSeg"><button data-v="M" class="on">Optical</button><button data-v="H">Height (levelled)</button><button data-v="2D">Instrument map</button></div>
+            <span>Profiles</span>
+            <div class="seg" id="modeSeg"><button data-v="raw" class="on">On surface</button><button data-v="rough">Roughness</button></div>
+            <label for="exag">Height &times;<span class="val" id="exagV">10</span><input id="exag" type="range" min="1" max="100" value="10"></label>
+            <button class="play" id="traceBtn">&#9654; Trace line</button>
+          </div>
+        </div>
+        <div class="vp-bottom">
+          <div class="vp-legend" id="vpSurfLegend" hidden>
+            <div>Surface height vs. field mean plane, same scale for every field</div>
+            <div class="ramp"></div>
+            <div class="ramp-l"><span id="hsLo">&minus;</span><span>0</span><span id="hsHi">+</span></div>
+          </div>
+          <div class="vp-legend" id="vpLegend">
+            <div>Profile height vs. mean line</div>
+            <div class="ramp"></div>
+            <div class="ramp-l"><span>valley</span><span>0</span><span>peak</span></div>
+          </div>
+          <div class="vp-legend" id="vpNote">Drag to orbit &middot; scroll to zoom &middot; click a cube, spot or profile</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="tabs">
+          <div class="tl" role="tablist">
+            <button class="tab on" data-tab="anatomy">Profile anatomy</button>
+            <button class="tab" data-tab="dist">Height distribution</button>
+            <button class="tab" data-tab="compare">Compare samples</button>
+            <button class="tab" data-tab="table">Data table</button>
+          </div>
+          <div class="lc">Filter cutoff &lambda;c
+            <div class="seg" id="lamSeg"><button data-v="250">0.25 mm</button><button data-v="800" class="on">0.8 mm</button><button data-v="2500">2.5 mm</button></div>
+          </div>
+        </div>
+
+        <div class="tabpane" id="tab-anatomy">
+          <div class="row">
+            <div class="steps" id="steps">
+              <button class="stepbtn" data-s="0"><span class="n">1</span>Raw height</button>
+              <button class="stepbtn" data-s="1"><span class="n">2</span>Leveled + mean line</button>
+              <button class="stepbtn on" data-s="2"><span class="n">3</span>Roughness</button>
+              <button class="stepbtn" data-s="3"><span class="n">4</span>Rz peaks &amp; valleys</button>
+            </div>
+            <div style="display:flex; gap:6px">
+              <button class="btn" id="playAnat">&#9654; Play steps</button>
+              <button class="btn ghost" id="traceBtn2">Trace</button>
+            </div>
+          </div>
+          <div class="explain" id="explain"></div>
+          <canvas class="chart" id="cvProfile" aria-label="Height profile chart"></canvas>
+          <div class="lineread" id="lineRead"></div>
+        </div>
+
+        <div class="tabpane" id="tab-dist" hidden>
+          <div class="row" style="margin-bottom:6px">
+            <div class="csub" style="margin:0">Roughness heights (after filtering) of the selected <b id="distScopeName">profile</b></div>
+            <div class="lc" style="padding:0">Scope <div class="seg" id="scopeSeg"><button data-v="line" class="on">Profile</button><button data-v="spot">Whole spot</button></div></div>
+          </div>
+          <div class="grid2">
+            <div><div class="ctitle">Height histogram</div><div class="csub">Share of points at each height. A long right tail means isolated peaks.</div><canvas class="chart sm" id="cvHist"></canvas></div>
+            <div><div class="ctitle">Bearing (Abbott&ndash;Firestone) curve</div><div class="csub">Material ratio: the share of the surface above each height, as if lapped down from the top.</div><canvas class="chart sm" id="cvBear"></canvas></div>
+          </div>
+        </div>
+
+        <div class="tabpane" id="tab-compare" hidden>
+          <div class="progress" id="cmpProgress"></div>
+          <div class="grid2">
+            <div>
+              <div class="ctitle">Ra by spot</div>
+              <div class="csub">Per power level: mean over samples of each spot's profile mean; bar = range over samples. Corners C1&ndash;C4, centre C5, Main at x30.</div>
+              <div class="clegend" id="lgSpots"></div>
+              <canvas class="chart" id="cvSpots"></canvas>
+            </div>
+            <div>
+              <div class="ctitle">Ra by laser&#8209;power level</div>
+              <div class="csub">x50 profiles of C1&ndash;C5. Mean &plusmn; 1 SD, every profile shown as a faint dot. One sample per level so far; laser power in W is not entered yet.</div>
+              <canvas class="chart" id="cvLevels"></canvas>
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <div class="ctitle">Skewness vs. kurtosis of every profile</div>
+            <div class="csub">Rsk &gt; 0: peaks dominate (often adhered powder or spatter). Rsk &lt; 0: valleys dominate (pits, gaps between tracks). Rku &gt; 3: spiky surface.</div>
+            <div class="clegend" id="lgScatter"></div>
+            <canvas class="chart" id="cvScatter" style="height:320px"></canvas>
+          </div>
+        </div>
+
+        <div class="tabpane" id="tab-table" hidden>
+          <div class="csub">Every measured spot at the current &lambda;c. Values are means of the spot's profiles (&micro;m). Click a row to open the spot.</div>
+          <div class="tablewrap"><table id="tbl"></table></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="about">
+    <div class="card"><h3>What is measured</h3><p>Every coloured line is a real height profile exported by the microscope: 10 horizontal and 10 vertical lines per spot, 2.08 &micro;m apart along the line at x50. Roughness is computed live from these points with the same method as the workbook. The <span class="mono">Ra</span> check under the profile chart compares the two.</p></div>
+    <div class="card"><h3>What is reconstructed</h3><p>The 3D relief under the profiles is rebuilt from the microscope's colour height-map image and calibrated against that spot's own profiles. Its fit quality (R&sup2;, RMS) is shown per spot. Each acquisition has its own height zero and the instrument colour bar is rescaled per image, so every field is levelled to its mean plane and the <i>Height (levelled)</i> skin uses one colour scale for all fields. The map is smoothed by the instrument, so it shows form and waviness, not fine roughness. Plate spacing is schematic.</p></div>
+    <div class="card"><h3>Method</h3><p>End padding removed &rarr; least&#8209;squares line removed &rarr; Gaussian filter (ISO 16610&#8209;21) at the chosen &lambda;c, ends trimmed by &lambda;c/2 &rarr; Ra, Rq, Rz, Rt, Rsk, Rku (ISO 21920&#8209;2). Rz averages the peak&#8209;to&#8209;valley height of each &lambda;c&#8209;long segment. Data built by <span class="mono">06_Digital_Twin/build_twin_data.py</span>.</p></div>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+window.__startTwin = function(){
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const SPOTS = ['C1','C2','C3','C4','C5','Main'];
+const LEVEL_VAR = {Min:'--min', Avg:'--avg', Max:'--max'};
+const CAL = {50:2.0793, 30:3.4858};
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (v, d=2) => Number.isFinite(v) ? v.toFixed(d) : '—';
+const STAGE_TEXT = [
+  'Heights exactly as the microscope exported them, with the mean removed. The overall slope is the tilt of the cube on the stage, not roughness.',
+  'Tilt removed. The smooth curve is the Gaussian mean line at the chosen λc: everything longer than λc (layer-scale undulation, waviness) belongs to it, not to roughness.',
+  'Roughness profile = leveled profile minus mean line. The band is ±Ra. The shaded ends (λc/2) are excluded because the filter is unreliable there. Tall narrow peaks are typical of partly melted powder particles and spatter stuck to the last layer; deep narrow dips can be pores or gaps between melt tracks.',
+  'The roughness profile split into sampling lengths of λc. In each segment the highest peak (▲) and deepest valley (▼) are marked. Rz is the mean of these peak-to-valley heights; Rt is the largest over the whole length.'
+];
+
+const ST = { plate:'P001', sample:null, spotId:null, lineKey:null, lambda:800, exag:10, skin:'M', mode:'raw', view:'plate',
+             stage:2, morph:null, trace:null, scope:'line', tab:'anatomy', hover:null, playTimer:null };
+let D = null, SPOT = {}, BY_SAMPLE = {}, LEVEL = {}, POS = {}, PLATE_IDS = [], PLATE_CELLS = [];
+const plateLabels = [];
+const cache = new Map();
+
+/* ---------------------------------------------------------------- data + roughness */
+function decode(b64, mean, step){
+  const bin = atob(b64), n = bin.length >> 1, out = new Float64Array(n);
+  for (let i = 0; i < n; i++){
+    let v = bin.charCodeAt(2*i) | (bin.charCodeAt(2*i+1) << 8);
+    if (v > 32767) v -= 65536;
+    out[i] = mean + v * step;
+  }
+  return out;
+}
+function lineKey(sp, ln){ return sp.id + '_' + ln.d + 'L' + ln.n; }
+function findLine(key){
+  const sp = SPOT[key.slice(0, key.lastIndexOf('_'))];
+  const tag = key.slice(key.lastIndexOf('_') + 1);
+  return { sp, ln: sp.lines.find(l => (l.d + 'L' + l.n) === tag) };
+}
+function processLine(sp, ln, lambda){
+  const key = lineKey(sp, ln) + '|' + lambda;
+  if (cache.has(key)) return cache.get(key);
+  if (!ln._z) ln._z = decode(ln.z, ln.zmean, D.zStep);
+  const z = ln._z, lo = ln.lo, n = ln.hi - ln.lo, dx = ln.len / (ln.cnt - 1);
+  let sx=0, sy=0, sxx=0, sxy=0;
+  for (let i = 0; i < n; i++){ const x = i*dx, y = z[lo+i]; sx+=x; sy+=y; sxx+=x*x; sxy+=x*y; }
+  const slope = (n*sxy - sx*sy) / (n*sxx - sx*sx), icp = (sy - slope*sx) / n, mean = sy / n;
+  const raw = new Float64Array(n), lev = new Float64Array(n), wav = new Float64Array(n), r = new Float64Array(n);
+  for (let i = 0; i < n; i++){ raw[i] = z[lo+i] - mean; lev[i] = z[lo+i] - (slope*i*dx + icp); }
+  const alpha = Math.sqrt(Math.LN2 / Math.PI), half = Math.round(lambda / dx);
+  const w = new Float64Array(2*half + 1);
+  for (let k = 0; k <= 2*half; k++){ const t = (k - half) * dx / (alpha * lambda); w[k] = Math.exp(-Math.PI * t * t); }
+  for (let i = 0; i < n; i++){
+    const j0 = Math.max(0, i - half), j1 = Math.min(n - 1, i + half);
+    let num = 0, den = 0;
+    for (let j = j0; j <= j1; j++){ const wk = w[j - i + half]; num += wk * lev[j]; den += wk; }
+    wav[i] = num / den; r[i] = lev[i] - wav[i];
+  }
+  const trim = Math.round(lambda / 2 / dx), a = trim, b = n - trim;
+  const res = { lo, n, dx, raw, lev, wav, r, a, b, segs:[], Ra:NaN, Rq:NaN, Rz:NaN, Rt:NaN, Rsk:NaN, Rku:NaN, evalLen:0 };
+  if (b - a > 10){
+    const m = b - a; let s1=0, s2=0, s3=0, s4=0, mx=-Infinity, mn=Infinity;
+    for (let i = a; i < b; i++){ const v = r[i]; s1 += Math.abs(v); s2 += v*v; s3 += v*v*v; s4 += v*v*v*v; if (v > mx) mx = v; if (v < mn) mn = v; }
+    res.Ra = s1/m; res.Rq = Math.sqrt(s2/m); res.Rt = mx - mn; res.Rsk = (s3/m) / res.Rq**3; res.Rku = (s4/m) / res.Rq**4;
+    res.evalLen = m * dx;
+    const per = Math.round(lambda / dx), nsl = Math.floor(m / per);
+    let rz = 0;
+    for (let s = 0; s < nsl; s++){
+      let pi = a + s*per, vi = pi;
+      for (let i = a + s*per; i < a + (s+1)*per; i++){ if (r[i] > r[pi]) pi = i; if (r[i] < r[vi]) vi = i; }
+      res.segs.push({ i0:a + s*per, i1:a + (s+1)*per, pk:pi, vl:vi }); rz += r[pi] - r[vi];
+    }
+    res.Rz = nsl ? rz / nsl : NaN;
+  }
+  cache.set(key, res);
+  return res;
+}
+function spotStats(sp, lambda){
+  const out = { H:[], V:[], all:[] };
+  for (const ln of sp.lines){ const p = processLine(sp, ln, lambda); out[ln.d].push(p); out.all.push(p); }
+  const avg = (arr, k) => { const v = arr.map(p => p[k]).filter(Number.isFinite); return v.length ? v.reduce((s,x)=>s+x,0)/v.length : NaN; };
+  const sd = (arr, k) => { const v = arr.map(p => p[k]).filter(Number.isFinite); if (v.length < 2) return NaN; const m = v.reduce((s,x)=>s+x,0)/v.length; return Math.sqrt(v.reduce((s,x)=>s+(x-m)**2,0)/(v.length-1)); };
+  return { RaH:avg(out.H,'Ra'), RaV:avg(out.V,'Ra'), Ra:avg(out.all,'Ra'), RaSD:sd(out.all,'Ra'), Rq:avg(out.all,'Rq'),
+           Rz:avg(out.all,'Rz'), Rt:avg(out.all,'Rt'), Rsk:avg(out.all,'Rsk'), Rku:avg(out.all,'Rku'), nH:out.H.length, nV:out.V.length, procs:out.all };
+}
+
+/* ---------------------------------------------------------------- geometry */
+function spotGeom(spotName, cal){
+  const w = cal * 2880 / 1000, h = cal * 2160 / 1000;
+  const o = { C1:[0,0], C3:[12-w,0], C2:[0,12-h], C4:[12-w,12-h], C5:[(12-w)/2,(12-h)/2], Main:[(12-w)/2,(12-h)/2] }[spotName];
+  return { w, h, ox:o[0], oz:o[1] };
+}
+const PLATE_DX = 150;
+function plateX(plate){ return PLATE_IDS.indexOf(plate) * PLATE_DX; }
+function cubeXZ(pos, plate){ const m = /R(\d)C(\d)/.exec(pos); return { cx:plateX(plate) + (+m[2] - 3) * 22, cz:(+m[1] - 2) * 22 }; }
+
+/* ---------------------------------------------------------------- 3D */
+let renderer, scene, camera, controls, ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+const cubes = {}, planes = {}, tex = {};
+let spotGroup = null, probe = null, hitMeshes = [], fly = null, surfInfo = null;
+const loader = new THREE.TextureLoader();
+
+function getTex(path, crop){
+  const k = path + (crop ? '#c' : '');
+  if (tex[k]) return tex[k];
+  const t = loader.load(path);
+  t.anisotropy = 4;
+  if (crop){ t.offset.set(crop[0], 1 - crop[3]); t.repeat.set(crop[2] - crop[0], crop[3] - crop[1]); }
+  tex[k] = t; return t;
+}
+function skinTex(sp){
+  if (ST.skin === 'H' && sp.surf) return heightTex(sp);
+  if (ST.skin === '2D' && sp.img['2D'] && sp.surf && sp.surf.crop) return getTex(sp.img['2D'], sp.surf.crop);
+  return sp.img.M ? getTex(sp.img.M) : null;
+}
+
+/* Each acquisition has its own height zero, and the instrument colour bar runs from 0 to that
+   image's maximum, so absolute heights and instrument colours are not comparable between fields.
+   Every reconstructed field is therefore levelled (best-fit plane removed) and drawn on one scale. */
+let HSCALE = 50;
+function levelSurfaces(){
+  const all = [];
+  for (const sp of D.spots){
+    const S = sp.surf; if (!S) continue;
+    if (!S._q) S._q = decode(S.z, 0, S.step);
+    const W = S.w, H = S.h, n = W * H;
+    let s1=0, si=0, sj=0, sii=0, sjj=0, sij=0, sz=0, siz=0, sjz=0;
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++){
+      const z = S._q[j*W + i]; s1++; si+=i; sj+=j; sii+=i*i; sjj+=j*j; sij+=i*j; sz+=z; siz+=i*z; sjz+=j*z;
+    }
+    // solve the 3x3 normal equations for z = a + b*i + c*j (Cramer's rule)
+    const M = [[s1,si,sj],[si,sii,sij],[sj,sij,sjj]], r = [sz,siz,sjz];
+    const det3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+    const d = det3(M), col = (k) => M.map((row, q) => row.map((v, c) => c === k ? r[q] : v));
+    const a = det3(col(0)) / d, b = det3(col(1)) / d, c = det3(col(2)) / d;
+    S._pl = { a, b, c };
+    S._lev = new Float32Array(n);
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++){ const v = S._q[j*W + i] - (a + b*i + c*j); S._lev[j*W + i] = v; if (((i + j) & 7) === 0) all.push(Math.abs(v)); }
+  }
+  if (all.length){ all.sort((x, y) => x - y); HSCALE = Math.max(10, Math.ceil(all[Math.floor(0.98 * (all.length - 1))] / 10) * 10); }
+  $('#hsLo').textContent = '\u2212' + HSCALE + ' \u00b5m'; $('#hsHi').textContent = '+' + HSCALE + ' \u00b5m';
+}
+function planeAt(sp, px, py){            // fitted plane (um) at image pixel (px, py)
+  const S = sp.surf; if (!S || !S._pl) return 0;
+  const gi = px / 2880 * S.w - 0.5, gj = py / 2160 * S.h - 0.5;
+  return S._pl.a + S._pl.b * gi + S._pl.c * gj;
+}
+function heightTex(sp){
+  const k = 'H#' + sp.id; if (tex[k]) return tex[k];
+  const S = sp.surf, cv = document.createElement('canvas'); cv.width = S.w; cv.height = S.h;
+  const ctx = cv.getContext('2d'), img = ctx.createImageData(S.w, S.h);
+  for (let q = 0; q < S.w * S.h; q++){
+    const c = divColor(S._lev[q] / HSCALE);
+    img.data[4*q] = c.r * 255; img.data[4*q+1] = c.g * 255; img.data[4*q+2] = c.b * 255; img.data[4*q+3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = 4; tex[k] = t; return t;
+}
+
+function init3D(){
+  const cv = $('#gl');
+  renderer = new THREE.WebGLRenderer({ canvas:cv, antialias:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0E1115);
+  camera = new THREE.PerspectiveCamera(38, 1, 0.02, 4000);
+  camera.position.set(0, 95, 110);
+  controls = new THREE.OrbitControls(camera, cv);
+  controls.enableDamping = true; controls.dampingFactor = 0.09; controls.target.set(0, 6, 0);
+  controls.maxDistance = 400; controls.minDistance = 1.2;
+  scene.add(new THREE.HemisphereLight(0xdfe7ff, 0x1a1d22, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(-40, 90, 30); scene.add(sun);
+
+  const arrowMat = new THREE.MeshBasicMaterial({ color:0x8B95A1 });
+  for (const pid of PLATE_IDS){
+    const x0 = plateX(pid);
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(124, 4, 82), new THREE.MeshStandardMaterial({ color:0x5f666e, metalness:0.55, roughness:0.6 }));
+    plate.position.set(x0, -2, 0); plate.userData = { plate:pid }; scene.add(plate);
+    const arrow = new THREE.Mesh(new THREE.ConeGeometry(2.2, 6, 3), arrowMat);
+    arrow.rotation.x = Math.PI / 2; arrow.position.set(x0 + 68, 0.5, -10); scene.add(arrow);
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(1, 0.4, 26), arrowMat); shaft.position.set(x0 + 68, 0.5, -26); scene.add(shaft);
+    plateLabels.push({ pid, x:x0 - 52, z:46 });
+  }
+
+  for (const c of PLATE_CELLS){
+    const { cx, cz } = cubeXZ(c.pos, c.plate);
+    const measured = !!BY_SAMPLE[c.sample];
+    const lv = css(LEVEL_VAR[c.level]);
+    const side = new THREE.MeshStandardMaterial({ color:0x9aa1a8, metalness:0.6, roughness:0.5 });
+    const top = new THREE.MeshStandardMaterial({ color: measured ? 0x2b2f35 : new THREE.Color(lv).lerp(new THREE.Color(0x9aa1a8), 0.55), metalness:0.3, roughness:0.7 });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(12, 12, 12), [side, side, top, side, side, side]);
+    mesh.position.set(cx, 6, cz); mesh.userData = { sample:c.sample, measured };
+    scene.add(mesh);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(13.2, 0.5, 13.2), new THREE.MeshBasicMaterial({ color:new THREE.Color(lv) }));
+    base.position.set(cx, 0.26, cz); scene.add(base);
+    cubes[c.sample] = { mesh, cx, cz, level:c.level, measured, plate:c.plate };
+  }
+  for (const s of Object.keys(BY_SAMPLE)) if (cubes[s]) buildFacePlanes(s);
+  probe = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.24, 16), new THREE.MeshBasicMaterial({ color:0xA39BF5, depthTest:false }));
+  probe.rotation.x = Math.PI; probe.renderOrder = 10; probe.visible = false; scene.add(probe);
+
+  cv.addEventListener('pointermove', onPointer);
+  cv.addEventListener('pointerleave', () => { hideTip(); });
+  cv.addEventListener('click', onClick);
+  new ResizeObserver(resize3D).observe($('#vp'));
+  resize3D();
+  renderer.setAnimationLoop(frame3D);
+}
+function resize3D(){
+  const vp = $('#vp'), w = vp.clientWidth, h = vp.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+function buildFacePlanes(sample){
+  const { cx, cz } = cubes[sample];
+  for (const sp of BY_SAMPLE[sample]){
+    const g = spotGeom(sp.spot, sp.cal);
+    const order = sp.spot === 'Main' ? 3 : sp.spot === 'C5' ? 2 : 1;
+    const mat = new THREE.MeshBasicMaterial({ map:skinTex(sp), depthWrite:false, polygonOffset:true, polygonOffsetFactor:-order, polygonOffsetUnits:-order });
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(g.w, g.h), mat);
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(cx - 6 + g.ox + g.w/2, 12 + 0.004*order, cz - 6 + g.oz + g.h/2);
+    m.renderOrder = order; m.userData = { spotId:sp.id };
+    m.visible = sp.spot !== 'Main';
+    scene.add(m); planes[sp.id] = m;
+  }
+}
+function updatePlanesVisibility(){
+  for (const id in planes){
+    const sp = SPOT[id], p = planes[id];
+    const sameCube = sp.sample === ST.sample;
+    const sel = SPOT[ST.spotId];
+    if (sel && sameCube && sel.spot === 'Main') p.visible = sp.spot === 'Main' && id !== ST.spotId;
+    else p.visible = sp.spot !== 'Main' && id !== ST.spotId;
+    p.material.map = skinTex(sp); p.material.needsUpdate = true;
+  }
+}
+
+function divColor(t){ // t in [-1,1]
+  const a = new THREE.Color(0x3987e5), m = new THREE.Color(0x8a8a86), b = new THREE.Color(0xe66767);
+  t = Math.max(-1, Math.min(1, t));
+  return t < 0 ? m.clone().lerp(a, -t) : m.clone().lerp(b, t);
+}
+
+function buildSpot3D(){
+  if (spotGroup){ scene.remove(spotGroup); spotGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); }); }
+  spotGroup = new THREE.Group(); hitMeshes = []; surfInfo = null;
+  const sp = SPOT[ST.spotId]; if (!sp) { scene.add(spotGroup); return; }
+  const { cx, cz } = cubes[sp.sample], g = spotGeom(sp.spot, sp.cal), E = ST.exag / 1000;
+  const X0 = cx - 6 + g.ox, Z0 = cz - 6 + g.oz;
+
+  // surface (reconstructed) or flat image
+  let zref, zminRel = 0, zmaxRel = 0;
+  if (sp.surf){
+    const S = sp.surf;
+    zref = S.zref;
+    for (const v of S._lev){ if (v < zminRel) zminRel = v; if (v > zmaxRel) zmaxRel = v; }
+  } else {
+    let s = 0, n = 0; for (const ln of sp.lines){ s += ln.zmean; n++; } zref = n ? s/n : 0;
+  }
+  const lift = -zminRel * E + 0.01;
+  const yOf = zr => 12 + lift + zr * E;
+  if (sp.surf){
+    const S = sp.surf, geo = new THREE.PlaneGeometry(g.w, g.h, S.w - 1, S.h - 1);
+    geo.rotateX(-Math.PI / 2);
+    const pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) pos.setY(i, yOf(S._lev[i]) - 12);
+    geo.computeVertexNormals();
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map:skinTex(sp), roughness:0.75, metalness:0.15 }));
+    mesh.position.set(X0 + g.w/2, 12, Z0 + g.h/2);
+    spotGroup.add(mesh);
+    surfInfo = { r2:S.r2, rms:S.rms };
+  } else {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(g.w, g.h), new THREE.MeshBasicMaterial({ map:skinTex(sp) }));
+    m.rotation.x = -Math.PI/2; m.position.set(X0 + g.w/2, 12.01, Z0 + g.h/2); spotGroup.add(m);
+  }
+  // profiles
+  const procs = sp.lines.map(ln => ({ ln, p:processLine(sp, ln, ST.lambda) }));
+  const rqs = procs.map(o => o.p.Rq).filter(Number.isFinite);
+  const rq = rqs.length ? rqs.reduce((s,x)=>s+x,0)/rqs.length : 5;
+  const roughBase = yOf(zmaxRel) + 3 * rq * E + 0.12;
+  for (const { ln, p } of procs){
+    const key = lineKey(sp, ln), sel = key === ST.lineKey;
+    const step = Math.max(1, Math.ceil(p.n / 900));
+    const pts = [], cols = [], base = [];
+    const i0 = ST.mode === 'rough' ? p.a : 0, i1 = ST.mode === 'rough' ? p.b : p.n;
+    for (let i = i0; i < i1; i += step){
+      const oi = p.lo + i, t = oi / (ln.cnt - 1);
+      const px = ln.x0 + (ln.x1 - ln.x0) * t, py = ln.y0 + (ln.y1 - ln.y0) * t;
+      const X = X0 + px * sp.cal / 1000, Z = Z0 + py * sp.cal / 1000;
+      let y, c;
+      if (ST.mode === 'rough'){ y = roughBase + p.r[i] * E; c = divColor(p.r[i] / (3 * rq)); base.push(X, roughBase, Z); }
+      else { const zr = ln._z[oi] - zref - planeAt(sp, px, py); y = yOf(zr) + 0.004; c = divColor(p.r[i] / (3 * rq)); base.push(X, yOf(zr), Z); }
+      pts.push(X, y, Z); cols.push(c.r, c.g, c.b);
+    }
+    const lg = new THREE.BufferGeometry();
+    lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    lg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+    const line = new THREE.Line(lg, new THREE.LineBasicMaterial({ vertexColors:!sel, color: sel ? 0xffffff : 0xffffff, depthTest: ST.mode === 'rough', transparent:true, opacity: sel ? 1 : (ST.lineKey ? 0.8 : 1) }));
+    line.renderOrder = sel ? 6 : 5; spotGroup.add(line);
+    // curtain (visible in roughness mode, always used for picking)
+    const m = pts.length / 3, cpos = new Float32Array(m * 6), ccol = new Float32Array(m * 6), idx = [];
+    for (let k = 0; k < m; k++){
+      cpos.set([pts[3*k], pts[3*k+1], pts[3*k+2], base[3*k], base[3*k+1] - (ST.mode === 'rough' ? 0 : 0.06), base[3*k+2]], 6*k);
+      ccol.set([cols[3*k], cols[3*k+1], cols[3*k+2], cols[3*k], cols[3*k+1], cols[3*k+2]], 6*k);
+      if (k < m - 1){ const a = 2*k, b = a+1, c2 = a+2, d = a+3; idx.push(a, b, c2, b, d, c2); }
+    }
+    const cg = new THREE.BufferGeometry();
+    cg.setAttribute('position', new THREE.BufferAttribute(cpos, 3));
+    cg.setAttribute('color', new THREE.BufferAttribute(ccol, 3));
+    cg.setIndex(idx);
+    const cm = new THREE.MeshBasicMaterial({ vertexColors:true, transparent:true, opacity: sel ? 0.6 : 0.32, side:THREE.DoubleSide, depthWrite:false });
+    cm.visible = ST.mode === 'rough';
+    const curtain = new THREE.Mesh(cg, cm); curtain.userData = { lineKey:key }; curtain.renderOrder = 4;
+    spotGroup.add(curtain); hitMeshes.push(curtain);
+    if (sel) spotGroup.userData.sel = { ln, p, step, X0, Z0, sp, yOf, zref, roughBase, E };
+  }
+  scene.add(spotGroup);
+  updatePlanesVisibility();
+  $('#vpNote').textContent = surfInfo
+    ? `Relief rebuilt from the colour height map, calibrated to this spot's profiles (R² ${surfInfo.r2.toFixed(2)}, RMS ${surfInfo.rms.toFixed(1)} µm) and levelled to its mean plane. Heights ×${ST.exag}.`
+    : `Heights ×${ST.exag}. No height map for this spot.`;
+}
+function probeAt(idx){
+  const s = spotGroup && spotGroup.userData.sel; if (!s) { probe.visible = false; return; }
+  const { ln, p, X0, Z0, sp, yOf, zref, roughBase, E } = s;
+  const i = Math.max(0, Math.min(p.n - 1, idx)), oi = p.lo + i, t = oi / (ln.cnt - 1);
+  const X = X0 + (ln.x0 + (ln.x1 - ln.x0) * t) * sp.cal / 1000, Z = Z0 + (ln.y0 + (ln.y1 - ln.y0) * t) * sp.cal / 1000;
+  const px = ln.x0 + (ln.x1 - ln.x0) * t, py = ln.y0 + (ln.y1 - ln.y0) * t;
+  const y = ST.mode === 'rough' ? roughBase + p.r[i] * E : yOf(ln._z[oi] - zref - planeAt(sp, px, py));
+  probe.position.set(X, y + 0.14, Z); probe.visible = true;
+}
+
+let INSTANT = false;
+function flyTo(pos, target, dur = 1100){
+  if (REDUCED || INSTANT){ camera.position.copy(pos); controls.target.copy(target); return; }
+  fly = { p0:camera.position.clone(), t0v:controls.target.clone(), p1:pos, t1:target, start:performance.now(), dur };
+}
+function viewCamera(view){
+  ST.view = view;
+  $('#cPlate').classList.toggle('on', view === 'plate');
+  $('#cCube').classList.toggle('on', view === 'cube');
+  $('#cSpot').classList.toggle('on', view === 'spot');
+  if (view === 'plate'){ const x0 = plateX(ST.plate); return flyTo(new THREE.Vector3(x0, 92, 108), new THREE.Vector3(x0, 6, 0)); }
+  const c = cubes[ST.sample];
+  if (view === 'cube') return flyTo(new THREE.Vector3(c.cx + 13, 36, c.cz + 30), new THREE.Vector3(c.cx, 10, c.cz));
+  const sp = SPOT[ST.spotId], g = spotGeom(sp.spot, sp.cal);
+  const X = c.cx - 6 + g.ox + g.w/2, Z = c.cz - 6 + g.oz + g.h/2;
+  flyTo(new THREE.Vector3(X + 0.15*g.w, 12 + 1.05*g.w, Z + 1.15*g.w), new THREE.Vector3(X, 12.3, Z));
+}
+const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+function frame3D(now){
+  if (fly){
+    const t = Math.min(1, (now - fly.start) / fly.dur), e = ease(t);
+    camera.position.lerpVectors(fly.p0, fly.p1, e); controls.target.lerpVectors(fly.t0v, fly.t1, e);
+    if (t >= 1) fly = null;
+  }
+  controls.update();
+  if (ST.trace){
+    const p = Math.min(1, (now - ST.trace.start) / ST.trace.dur);
+    const s = spotGroup && spotGroup.userData.sel;
+    if (s){ probeAt(Math.floor(p * (s.p.n - 1))); }
+    ST.trace.p = p; drawProfile();
+    if (p >= 1){ ST.trace = null; setTimeout(() => { if (!ST.trace) { probe.visible = false; drawProfile(); } }, 900); }
+  }
+  renderer.render(scene, camera);
+  placeLabels();
+}
+const labelEls = new Map();
+function placeLabels(){
+  const box = $('#labels'), w = box.clientWidth, h = box.clientHeight, want = [];
+  if (ST.view === 'plate') for (const L of plateLabels) want.push({ k:'P' + L.pid, x:L.x, y:1, z:L.z, html:`<b>${L.pid}</b>` });
+  if (ST.view !== 'spot'){
+    for (const s in cubes){ const c = cubes[s]; if (c.measured || ST.view === 'plate') want.push({ k:'s'+s, x:c.cx, y:12.6, z:c.cz, html:`<span class="sw" style="background:${css(LEVEL_VAR[c.level])}"></span>${s}${c.measured ? '' : ''}`, dim:!c.measured }); }
+  }
+  if (ST.view !== 'plate' && ST.sample){
+    const c = cubes[ST.sample];
+    for (const sp of BY_SAMPLE[ST.sample]){
+      if (sp.spot === 'Main' && ST.view === 'spot' && SPOT[ST.spotId].spot !== 'Main') continue;
+      const g = spotGeom(sp.spot, sp.cal);
+      const lx = sp.spot === 'Main' ? c.cx - 6 + g.ox + 0.6 : c.cx - 6 + g.ox + g.w/2;
+      const lz = sp.spot === 'Main' ? c.cz - 6 + g.oz + 0.4 : c.cz - 6 + g.oz + g.h/2;
+      if (ST.view === 'spot' && sp.id !== ST.spotId) continue;
+      want.push({ k:'p'+sp.id, x:lx, y:12.2, z:lz, html: sp.spot + (sp.complete ? '' : ' ⚠') });
+    }
+  }
+  const seen = new Set(), v = new THREE.Vector3();
+  for (const L of want){
+    seen.add(L.k);
+    let el = labelEls.get(L.k);
+    if (!el){ el = document.createElement('div'); el.className = 'lbl3d'; box.appendChild(el); labelEls.set(L.k, el); }
+    if (el._html !== L.html){ el.innerHTML = L.html; el._html = L.html; }
+    v.set(L.x, L.y, L.z).project(camera);
+    const vis = v.z < 1 && Math.abs(v.x) < 1.05 && Math.abs(v.y) < 1.05;
+    el.style.display = vis ? '' : 'none';
+    el.style.left = ((v.x + 1) / 2 * w) + 'px'; el.style.top = ((1 - v.y) / 2 * h) + 'px';
+    el.style.opacity = L.dim ? 0.55 : 1;
+  }
+  for (const [k, el] of labelEls) if (!seen.has(k)){ el.remove(); labelEls.delete(k); }
+}
+function pick(e){
+  const r = e.target.getBoundingClientRect();
+  ptr.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  if (ST.view === 'spot' && hitMeshes.length){
+    const hit = ray.intersectObjects(hitMeshes)[0]; if (hit) return { line:hit.object.userData.lineKey };
+  }
+  if (ST.view !== 'plate' && ST.sample){
+    const ps = Object.values(planes).filter(p => p.visible && SPOT[p.userData.spotId].sample === ST.sample);
+    const hit = ray.intersectObjects(ps)[0]; if (hit) return { spot:hit.object.userData.spotId };
+  }
+  const hit = ray.intersectObjects(Object.values(cubes).map(c => c.mesh))[0];
+  if (hit) return { sample:hit.object.userData.sample, measured:hit.object.userData.measured };
+  return null;
+}
+function onPointer(e){
+  const h = pick(e);
+  e.target.style.cursor = h && (h.line || h.spot || h.measured) ? 'pointer' : '';
+  if (!h) return hideTip();
+  if (h.line){
+    const { sp, ln } = findLine(h.line), p = processLine(sp, ln, ST.lambda);
+    showTip(`<div class="t">${ln.d}L${ln.n} &middot; ${sp.spot}</div><div class="m">Ra ${fmt(p.Ra)} µm &middot; Rz ${fmt(p.Rz)} µm</div>`, e.clientX, e.clientY);
+  } else if (h.spot){
+    const sp = SPOT[h.spot], s = spotStats(sp, ST.lambda);
+    showTip(`<div class="t">${sp.sample} &middot; ${sp.spot} (x${sp.mag})</div><div class="m">Ra ${fmt(s.Ra)} µm</div>${sp.complete ? '' : '<div>⚠ incomplete</div>'}`, e.clientX, e.clientY);
+  } else {
+    const c = cubes[h.sample];
+    showTip(`<div class="t">${h.sample} &middot; ${c.level} power</div><div>${h.measured ? 'Click to open' : 'No microscope data yet'}</div>`, e.clientX, e.clientY);
+  }
+}
+function onClick(e){
+  const h = pick(e); if (!h) return;
+  if (h.line) selectLine(h.line);
+  else if (h.spot) selectSpot(h.spot, true);
+  else if (h.measured) selectSample(h.sample, true);
+}
+
+/* ---------------------------------------------------------------- selection + rail */
+function showPlate(p){
+  ST.plate = p;
+  const first = PLATE_CELLS.find(c => c.plate === p && BY_SAMPLE[c.sample]);
+  if (first) selectSample(first.sample, false); else renderRail();
+  viewCamera('plate');
+}
+function selectSample(s, flyIn){
+  ST.sample = s; ST.plate = cubes[s] ? cubes[s].plate : ST.plate;
+  const keep = ST.spotId && SPOT[ST.spotId] ? SPOT[ST.spotId].spot : 'C1';
+  const sp = BY_SAMPLE[s].find(x => x.spot === keep) || BY_SAMPLE[s][0];
+  selectSpot(sp.id, false);
+  if (flyIn) viewCamera('cube');
+}
+function selectSpot(id, flyIn){
+  const sp = SPOT[id]; ST.sample = sp.sample; ST.spotId = id; if (cubes[sp.sample]) ST.plate = cubes[sp.sample].plate;
+  const cur = ST.lineKey && ST.lineKey.startsWith(id + '_') ? ST.lineKey : null;
+  const pref = sp.lines.find(l => l.d === 'H' && l.n === 5) || sp.lines[0];
+  ST.lineKey = cur || (pref ? lineKey(sp, pref) : null);
+  ST.trace = null; probe && (probe.visible = false);
+  renderRail(); buildSpot3D(); renderAnalysis();
+  if (flyIn) viewCamera('spot');
+}
+function selectLine(key){
+  ST.lineKey = key; ST.trace = null; probe.visible = false;
+  renderChips(); buildSpot3D(); renderAnalysis();
+}
+function renderRail(){
+  const plate = $('#plate'); plate.innerHTML = '';
+  $('#plateTitle').textContent = 'Plate ' + ST.plate;
+  const seg = $('#plateSeg');
+  seg.hidden = PLATE_IDS.length < 2;
+  seg.innerHTML = PLATE_IDS.map(p => {
+    const n = PLATE_CELLS.filter(c => c.plate === p && BY_SAMPLE[c.sample]).length;
+    return `<button data-p="${p}" class="${p === ST.plate ? 'on' : ''}">${p} \u00b7 ${n}/15</button>`;
+  }).join('');
+  seg.querySelectorAll('button').forEach(b => b.onclick = () => showPlate(b.dataset.p));
+  const cells = PLATE_CELLS.filter(c => c.plate === ST.plate).sort((a, b) => a.pos.localeCompare(b.pos));
+  for (const c of cells){
+    const measured = !!BY_SAMPLE[c.sample];
+    const b = document.createElement('button');
+    b.className = 'cell' + (measured ? ' measured' : '') + (c.sample === ST.sample ? ' sel' : '');
+    b.disabled = !measured;
+    b.innerHTML = `${c.sample}<span class="lv">${c.level}</span><span class="bar" style="background:${css(LEVEL_VAR[c.level])}"></span>`;
+    b.setAttribute('aria-label', `${c.sample}, ${c.level} power, position ${c.pos}${measured ? '' : ', not measured'}`);
+    if (measured) b.onclick = () => selectSample(c.sample, true);
+    plate.appendChild(b);
+  }
+  // face map
+  const svg = $('#face'), sel = SPOT[ST.spotId];
+  $('#faceTitle').textContent = ST.sample ? `${ST.sample} · ${LEVEL[ST.sample]}` : '—';
+  let h = `<rect x="0" y="0" width="12" height="12" rx=".2" fill="var(--surface-2)" stroke="var(--border-strong)" stroke-width=".06"/>`;
+  h += `<polygon points="5.6,-1.25 6.4,-1.25 6,-0.55" fill="var(--accent)"/><text x="6.6" y="-0.75" font-size=".55" fill="var(--text-2)">ref. edge</text>`;
+  const avail = {}; for (const sp of (BY_SAMPLE[ST.sample] || [])) avail[sp.spot] = sp;
+  for (const name of ['C1','C2','C3','C4','Main','C5']){
+    const sp = avail[name], g = spotGeom(name, sp ? sp.cal : (name === 'Main' ? CAL[30] : CAL[50]));
+    const on = sel && sp && sp.id === sel.id;
+    const main = name === 'Main';
+    const fill = main ? 'none' : (on ? 'var(--accent-soft)' : 'var(--surface)');
+    const stroke = on ? 'var(--accent)' : (sp ? 'var(--text-2)' : 'var(--border-strong)');
+    h += `<g class="spot" data-id="${sp ? sp.id : ''}" tabindex="${sp ? 0 : -1}" role="button" aria-label="${name}${sp ? '' : ' not measured'}">`;
+    h += `<rect x="${g.ox}" y="${g.oz}" width="${g.w}" height="${g.h}" fill="${fill}" fill-opacity="${main ? 0 : .9}" stroke="${stroke}" stroke-width="${on ? .12 : .06}" ${main ? 'stroke-dasharray=".3 .2"' : ''}/>`;
+    if (main){
+      h += `<line x1="0.2" y1="12.95" x2="1.4" y2="12.95" stroke="${stroke}" stroke-width=".08" stroke-dasharray=".3 .2"/>`;
+      h += `<text x="1.7" y="13.18" font-size=".62" fill="${sp ? 'var(--text)' : 'var(--muted)'}" font-weight="600">Main (x30)${sp && !sp.complete ? ' ⚠' : ''}</text>`;
+      h += `<rect x="0" y="12.4" width="6" height="1.1" fill="transparent"/></g>`;
+    } else {
+      h += `<text x="${g.ox + g.w/2}" y="${g.oz + g.h/2 + .22}" font-size=".7" text-anchor="middle" fill="${sp ? 'var(--text)' : 'var(--muted)'}" font-weight="600">${name}${sp && !sp.complete ? ' ⚠' : ''}</text></g>`;
+    }
+  }
+  svg.innerHTML = h;
+  svg.querySelectorAll('.spot').forEach(el => {
+    const id = el.dataset.id; if (!id) return;
+    el.onclick = () => selectSpot(id, true);
+    el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSpot(id, true); } };
+  });
+  // stats
+  $('#spotTitle').textContent = sel ? sel.id : '—';
+  if (sel){
+    const s = spotStats(sel, ST.lambda);
+    const items = [['Ra H', s.RaH], ['Ra V', s.RaV], ['Ra all', s.Ra], ['Rq', s.Rq], ['Rz', s.Rz], ['Rt', s.Rt]];
+    $('#stats').innerHTML = items.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${fmt(v)}<span class="u">µm</span></div></div>`).join('')
+      + `<div class="stat"><div class="k">Rsk</div><div class="v">${fmt(s.Rsk)}</div></div><div class="stat"><div class="k">Rku</div><div class="v">${fmt(s.Rku)}</div></div><div class="stat"><div class="k">Lines</div><div class="v">${s.nH}+${s.nV}</div></div>`;
+    const msg = [sel.missing ? 'Missing: ' + sel.missing : '', ...(sel.issues || [])].filter(Boolean).join('; ');
+    $('#spotFlag').hidden = !msg; $('#spotFlagText').textContent = msg;
+  }
+  renderChips();
+}
+function renderChips(){
+  const sel = SPOT[ST.spotId];
+  for (const d of ['H','V']){
+    const box = $('#chips' + d); box.innerHTML = '';
+    for (let n = 1; n <= 10; n++){
+      const ln = sel && sel.lines.find(l => l.d === d && l.n === n);
+      const b = document.createElement('button');
+      b.className = 'chip'; b.textContent = d + 'L' + n; b.disabled = !ln;
+      if (ln){ const k = lineKey(sel, ln); if (k === ST.lineKey) b.classList.add('sel'); b.onclick = () => selectLine(k); }
+      box.appendChild(b);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------- charts */
+function prep(cv){
+  const dpr = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+  const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  return { c, w, h };
+}
+function ticks(a, b, n = 5){
+  const span = b - a; if (!(span > 0)) return [a];
+  const s0 = span / n, mag = 10 ** Math.floor(Math.log10(s0)), e = s0 / mag;
+  const step = (e >= 7.5 ? 10 : e >= 3.5 ? 5 : e >= 1.5 ? 2 : 1) * mag, out = [];
+  for (let v = Math.ceil(a / step) * step; v <= b + step * 1e-6; v += step) out.push(+v.toFixed(10));
+  return out;
+}
+function frame(c, w, h, xd, yd, o){
+  const B = { l:54, r:w - 14, t:12, b:h - 38 };
+  const sx = v => B.l + (v - xd[0]) / (xd[1] - xd[0]) * (B.r - B.l);
+  const sy = v => B.b - (v - yd[0]) / (yd[1] - yd[0]) * (B.b - B.t);
+  c.font = '11px "IBM Plex Mono", ui-monospace, monospace'; c.lineWidth = 1;
+  const grid = css('--grid'), mut = css('--muted'), t2 = css('--text-2');
+  c.fillStyle = mut; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (const v of (o.yt || ticks(yd[0], yd[1], 5))){ const y = Math.round(sy(v)) + .5; c.strokeStyle = grid; c.beginPath(); c.moveTo(B.l, y); c.lineTo(B.r, y); c.stroke(); c.fillText((o.yf || (x => x))(v), B.l - 6, y); }
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  if (o.xcats){ o.xcats.forEach((k, i) => c.fillText(k, sx(i), B.b + 6)); }
+  else for (const v of (o.xt || ticks(xd[0], xd[1], 7))){ const x = sx(v); c.fillText((o.xf || (x => x))(v), x, B.b + 6); }
+  c.strokeStyle = css('--border-strong'); c.beginPath(); c.moveTo(B.l, B.b + .5); c.lineTo(B.r, B.b + .5); c.stroke();
+  c.fillStyle = t2; c.font = '11px "IBM Plex Sans", system-ui, sans-serif';
+  if (o.xl){ c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText(o.xl, B.r, h - 2); }
+  if (o.yl){ c.save(); c.translate(12, (B.t + B.b) / 2); c.rotate(-Math.PI / 2); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(o.yl, 0, 0); c.restore(); }
+  return { B, sx, sy };
+}
+function lerpArr(a, b, t){ const o = new Float64Array(a.length); for (let i = 0; i < a.length; i++) o[i] = a[i] + (b[i] - a[i]) * t; return o; }
+function stageData(p, s){
+  const absMax = (arr, a, b) => { let m = 0; for (let i = a; i < b; i++) m = Math.max(m, Math.abs(arr[i])); return m; };
+  if (s === 0){ const m = absMax(p.raw, 0, p.n) * 1.08; return { y:p.raw, yd:[-m, m], over:0 }; }
+  if (s === 1){ const m = Math.max(absMax(p.lev, 0, p.n), 1) * 1.08; return { y:p.lev, yd:[-m, m], over:1 }; }
+  const m = Math.max(absMax(p.r, p.a, p.b), 1) * 1.12; return { y:p.r, yd:[-m, m], over:0 };
+}
+function currentLine(){ if (!ST.lineKey) return null; const { sp, ln } = findLine(ST.lineKey); return ln ? { sp, ln, p:processLine(sp, ln, ST.lambda) } : null; }
+function drawProfile(){
+  const cv = $('#cvProfile'); if (!cv.clientWidth) return;
+  const { c, w, h } = prep(cv); const L = currentLine(); if (!L) return;
+  const { p, ln } = L;
+  let sd = stageData(p, ST.stage), y = sd.y, yd = sd.yd, over = sd.over, t = 1;
+  if (ST.morph){
+    t = Math.min(1, (performance.now() - ST.morph.start) / ST.morph.dur); const e = ease(t);
+    const a = stageData(p, ST.morph.from);
+    y = lerpArr(a.y, sd.y, e); yd = [a.yd[0] + (sd.yd[0] - a.yd[0]) * e, a.yd[1] + (sd.yd[1] - a.yd[1]) * e]; over = a.over + (sd.over - a.over) * e;
+    if (t >= 1) ST.morph = null; else requestAnimationFrame(drawProfile);
+  }
+  const s0 = p.lo * p.dx / 1000, s1 = (p.lo + p.n - 1) * p.dx / 1000;
+  const { B, sx, sy } = frame(c, w, h, [s0, s1], yd, { xl:'Position along the line (mm)', yl:'Height (µm)', xf:v => v.toFixed(1), yf:v => +v.toFixed(1) });
+  const X = i => sx((p.lo + i) * p.dx / 1000);
+  const roughStage = ST.stage >= 2 && !ST.morph;
+  if (ST.stage >= 2){
+    c.fillStyle = css('--surface-2'); c.globalAlpha = .9;
+    c.fillRect(B.l, B.t, X(p.a) - B.l, B.b - B.t); c.fillRect(X(p.b - 1), B.t, B.r - X(p.b - 1), B.b - B.t); c.globalAlpha = 1;
+    c.fillStyle = css('--muted'); c.font = '10px "IBM Plex Sans", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'top';
+    if (X(p.a) - B.l > 40) c.fillText('λc/2 trim', (B.l + X(p.a)) / 2, B.t + 4);
+  }
+  if (roughStage && Number.isFinite(p.Ra)){
+    c.fillStyle = css('--accent-soft'); c.fillRect(X(p.a), sy(p.Ra), X(p.b - 1) - X(p.a), sy(-p.Ra) - sy(p.Ra));
+    c.fillStyle = css('--accent'); c.font = '11px "IBM Plex Mono", monospace'; c.textAlign = 'left'; c.textBaseline = 'bottom';
+    c.fillText(`±Ra = ${p.Ra.toFixed(2)} µm`, X(p.a) + 6, sy(p.Ra) - 3);
+  }
+  if (ST.stage === 3 && !ST.morph){
+    c.setLineDash([3, 3]); c.strokeStyle = css('--border-strong');
+    for (const s of p.segs){ const x = Math.round(X(s.i0)) + .5; c.beginPath(); c.moveTo(x, B.t); c.lineTo(x, B.b); c.stroke(); }
+    if (p.segs.length){ const x = Math.round(X(p.segs[p.segs.length - 1].i1 - 1)) + .5; c.beginPath(); c.moveTo(x, B.t); c.lineTo(x, B.b); c.stroke(); }
+    c.setLineDash([]);
+  }
+  // series
+  const lim = ST.trace ? Math.floor(ST.trace.p * (p.n - 1)) : p.n - 1;
+  c.lineWidth = 1.25; c.strokeStyle = css('--text-2'); c.lineJoin = 'round';
+  c.beginPath(); for (let i = 0; i <= lim; i++){ const xx = X(i), yy = sy(y[i]); i ? c.lineTo(xx, yy) : c.moveTo(xx, yy); } c.stroke();
+  if (over > 0.01){
+    c.globalAlpha = over; c.lineWidth = 2.5; c.strokeStyle = css('--accent');
+    c.beginPath(); for (let i = 0; i <= lim; i++){ const xx = X(i), yy = sy(p.wav[i]); i ? c.lineTo(xx, yy) : c.moveTo(xx, yy); } c.stroke();
+    c.globalAlpha = 1; c.fillStyle = css('--accent'); c.font = '11px "IBM Plex Sans", sans-serif'; c.textAlign = 'right'; c.textBaseline = 'top';
+    c.fillText(`mean line (waviness), λc ${ST.lambda/1000} mm`, B.r - 4, B.t + 4);
+  }
+  if (roughStage){ c.strokeStyle = css('--border-strong'); c.beginPath(); c.moveTo(B.l, Math.round(sy(0)) + .5); c.lineTo(B.r, Math.round(sy(0)) + .5); c.stroke(); }
+  if (ST.stage === 3 && !ST.morph){
+    for (const s of p.segs){
+      for (const [i, up] of [[s.pk, true], [s.vl, false]]){
+        if (i > lim) continue;
+        const xx = X(i), yy = sy(p.r[i]);
+        c.fillStyle = up ? css('--div-pos') : css('--div-neg');
+        c.beginPath(); if (up){ c.moveTo(xx, yy - 9); c.lineTo(xx - 5, yy - 1); c.lineTo(xx + 5, yy - 1); } else { c.moveTo(xx, yy + 9); c.lineTo(xx - 5, yy + 1); c.lineTo(xx + 5, yy + 1); } c.closePath(); c.fill();
+      }
+    }
+    c.fillStyle = css('--text'); c.font = '600 12px "IBM Plex Mono", monospace'; c.textAlign = 'right'; c.textBaseline = 'top';
+    c.fillText(Number.isFinite(p.Rz) ? `Rz = ${p.Rz.toFixed(2)} µm (${p.segs.length} segments)` : 'Rz: profile shorter than one λc segment', B.r - 4, B.t + 4);
+  }
+  if (ST.trace){
+    const xx = X(lim); c.strokeStyle = css('--accent'); c.lineWidth = 1.5; c.beginPath(); c.moveTo(xx, B.t); c.lineTo(xx, B.b); c.stroke();
+    c.fillStyle = css('--accent'); c.beginPath(); c.arc(xx, sy(y[lim]), 4.5, 0, 7); c.fill();
+  }
+  if (ST.hover && ST.hover.cv === 'profile' && !ST.trace){
+    const i = ST.hover.i, xx = X(i), yy = sy(y[i]);
+    c.strokeStyle = css('--border-strong'); c.lineWidth = 1; c.beginPath(); c.moveTo(Math.round(xx) + .5, B.t); c.lineTo(Math.round(xx) + .5, B.b); c.stroke();
+    c.fillStyle = css('--surface'); c.strokeStyle = css('--text'); c.lineWidth = 2; c.beginPath(); c.arc(xx, yy, 4.5, 0, 7); c.fill(); c.stroke();
+  }
+  cv._map = { B, X, p, y };
+}
+function renderLineRead(){
+  const L = currentLine(); if (!L) { $('#lineRead').innerHTML = ''; return; }
+  const { sp, ln, p } = L;
+  let check = '';
+  if (ST.lambda === D.lambdaC_um && ln.ref) check = `<span>Workbook Ra <b>${ln.ref.Ra.toFixed(3)}</b> &middot; here <b>${p.Ra.toFixed(3)}</b> µm</span>`;
+  $('#lineRead').innerHTML = `<span><b>${sp.sample} ${sp.spot} ${ln.d}L${ln.n}</b></span><span>Ra <b>${fmt(p.Ra)}</b></span><span>Rq <b>${fmt(p.Rq)}</b></span><span>Rz <b>${fmt(p.Rz)}</b></span><span>Rt <b>${fmt(p.Rt)}</b></span><span>Rsk <b>${fmt(p.Rsk)}</b></span><span>Rku <b>${fmt(p.Rku)}</b></span><span>Evaluated <b>${(p.evalLen/1000).toFixed(2)}</b> mm</span>${check}`;
+}
+function setStage(s, animate = true){
+  if (s === ST.stage) return;
+  ST.morph = animate && !REDUCED ? { from:ST.stage, start:performance.now(), dur:750 } : null;
+  ST.stage = s;
+  $$('#steps .stepbtn').forEach(b => b.classList.toggle('on', +b.dataset.s === s));
+  $('#explain').textContent = STAGE_TEXT[s];
+  drawProfile();
+}
+function playSteps(){
+  clearTimeout(ST.playTimer);
+  setStage(0, false); let s = 0;
+  const next = () => { s++; if (s > 3) return; setStage(s); ST.playTimer = setTimeout(next, 2400); };
+  ST.playTimer = setTimeout(next, 1600);
+}
+function startTrace(){
+  if (!currentLine()) return;
+  if (ST.view !== 'spot') viewCamera('spot');
+  ST.trace = { start:performance.now(), dur:REDUCED ? 1 : 6500, p:0 };
+}
+
+function distValues(){
+  if (ST.scope === 'spot'){
+    const sp = SPOT[ST.spotId], out = [];
+    for (const ln of sp.lines){ const p = processLine(sp, ln, ST.lambda); for (let i = p.a; i < p.b; i++) out.push(p.r[i]); }
+    return out;
+  }
+  const L = currentLine(); if (!L) return []; const out = []; for (let i = L.p.a; i < L.p.b; i++) out.push(L.p.r[i]); return out;
+}
+function drawDist(){
+  const vals = distValues(); if (!vals.length) return;
+  $('#distScopeName').textContent = ST.scope === 'spot' ? 'spot (all profiles)' : 'profile';
+  let mn = Infinity, mx = -Infinity; for (const v of vals){ if (v < mn) mn = v; if (v > mx) mx = v; }
+  const nb = 40, bw = (mx - mn) / nb, cnt = new Array(nb).fill(0);
+  for (const v of vals) cnt[Math.min(nb - 1, Math.floor((v - mn) / bw))]++;
+  const pct = cnt.map(k => 100 * k / vals.length), top = Math.max(...pct);
+  { const cv = $('#cvHist'), { c, w, h } = prep(cv);
+    const { B, sx, sy } = frame(c, w, h, [mn, mx], [0, top * 1.1], { xl:'Roughness height (µm)', yl:'% of points', xf:v => +v.toFixed(0), yf:v => +v.toFixed(1) });
+    c.fillStyle = css('--accent');
+    for (let k = 0; k < nb; k++){ const x0 = sx(mn + k*bw) + 1, x1 = sx(mn + (k+1)*bw) - 1, y0 = sy(pct[k]); if (x1 > x0) c.fillRect(x0, y0, x1 - x0, B.b - y0); }
+    c.strokeStyle = css('--border-strong'); c.setLineDash([3,3]); c.beginPath(); c.moveTo(sx(0), B.t); c.lineTo(sx(0), B.b); c.stroke(); c.setLineDash([]);
+    cv._map = { B, sx, sy, mn, bw, nb, pct };
+  }
+  { const cv = $('#cvBear'), { c, w, h } = prep(cv);
+    const sorted = Float64Array.from(vals).sort().reverse(), N = sorted.length;
+    const { B, sx, sy } = frame(c, w, h, [0, 100], [mn, mx], { xl:'Material ratio (%)', yl:'Height (µm)', yf:v => +v.toFixed(0) });
+    c.strokeStyle = css('--accent'); c.lineWidth = 2; c.beginPath();
+    const step = Math.max(1, Math.floor(N / 600));
+    for (let i = 0; i < N; i += step){ const x = sx(100 * i / (N - 1)), y = sy(sorted[i]); i ? c.lineTo(x, y) : c.moveTo(x, y); }
+    c.stroke();
+    const at = q => sorted[Math.min(N - 1, Math.round(q * (N - 1)))];
+    c.fillStyle = css('--text-2'); c.font = '11px "IBM Plex Mono", monospace'; c.textAlign = 'left'; c.textBaseline = 'bottom';
+    for (const q of [0.1, 0.5, 0.9]){ const x = sx(q*100), y = sy(at(q)); c.fillStyle = css('--surface'); c.strokeStyle = css('--accent'); c.lineWidth = 2; c.beginPath(); c.arc(x, y, 4, 0, 7); c.fill(); c.stroke(); c.fillStyle = css('--text-2'); c.fillText(`${q*100}%: ${at(q).toFixed(1)}`, x + 7, y - 3); }
+    cv._map = { B, sx, sy, sorted };
+  }
+}
+
+/* compare */
+let ALL = null, allLambda = null, allJob = 0;
+function computeAll(){
+  const job = ++allJob, lam = ST.lambda, list = D.spots.slice(), out = [];
+  let k = 0, done = 0; const total = D.spots.reduce((s, sp) => s + sp.lines.length, 0);
+  $('#cmpProgress').textContent = `Computing ${total} profiles at λc ${lam/1000} mm…`;
+  const step = () => {
+    if (job !== allJob) return;
+    const t0 = performance.now();
+    while (k < list.length && performance.now() - t0 < 30){ const sp = list[k++]; const s = spotStats(sp, lam); out.push({ sp, s }); done += sp.lines.length; }
+    $('#cmpProgress').textContent = k < list.length ? `Computing profiles… ${done} / ${total}` : '';
+    if (k < list.length) setTimeout(step, 0); else { ALL = out; allLambda = lam; renderCompare(); renderTable(); }
+  };
+  step();
+}
+function samplesOrder(){ return Object.keys(BY_SAMPLE).sort((a, b) => ['Min','Avg','Max'].indexOf(LEVEL[a]) - ['Min','Avg','Max'].indexOf(LEVEL[b]) || a.localeCompare(b)); }
+function renderCompare(){
+  if (!ALL || ST.tab !== 'compare') return;
+  const sams = samplesOrder();
+  const lg = ['Min', 'Avg', 'Max'].filter(L => sams.some(s => LEVEL[s] === L))
+    .map(L => `<span class="key"><span class="dot" style="background:${css(LEVEL_VAR[L])}"></span>${L} power (${sams.filter(s => LEVEL[s] === L).join(', ')})</span>`).join('');
+  $('#lgSpots').innerHTML = lg + `<span class="key"><span class="fill"></span>H lines</span><span class="key"><span class="ring"></span>V lines</span>`;
+  $('#lgScatter').innerHTML = lg;
+  // Ra by spot
+  { const cv = $('#cvSpots'), { c, w, h } = prep(cv);
+    let top = 0; for (const o of ALL) top = Math.max(top, o.s.RaH || 0, o.s.RaV || 0);
+    const { B, sx, sy } = frame(c, w, h, [-0.6, 5.6], [0, top * 1.15], { xcats:SPOTS, yl:'Ra (µm)', yf:v => +v.toFixed(1) });
+    // one marker per power level, spot and direction: mean of the samples' spot means, bar = min..max over samples
+    const pts = [];
+    ['Min', 'Avg', 'Max'].forEach((L, li) => {
+      const col = css(LEVEL_VAR[L]), off = (li - 1) * 0.24;
+      for (const spotName of SPOTS){
+        for (const d of ['H', 'V']){
+          const vals = ALL.filter(o => o.sp.spot === spotName && LEVEL[o.sp.sample] === L)
+                          .map(o => ({ s:o.sp.sample, v:d === 'H' ? o.s.RaH : o.s.RaV })).filter(o => Number.isFinite(o.v));
+          if (!vals.length) continue;
+          const m = vals.reduce((a, o) => a + o.v, 0) / vals.length;
+          const lo = Math.min(...vals.map(o => o.v)), hi = Math.max(...vals.map(o => o.v));
+          const x = sx(SPOTS.indexOf(spotName) + off + (d === 'V' ? 0.07 : -0.07)), y = sy(m);
+          if (vals.length > 1){ c.strokeStyle = col; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x, sy(lo)); c.lineTo(x, sy(hi)); c.stroke(); }
+          c.beginPath(); c.arc(x, y, 5, 0, 7);
+          if (d === 'H'){ c.fillStyle = col; c.fill(); c.strokeStyle = css('--surface'); c.lineWidth = 2; c.stroke(); }
+          else { c.fillStyle = css('--surface'); c.fill(); c.strokeStyle = col; c.lineWidth = 2; c.stroke(); }
+          pts.push({ x, y, html:`<div class="t">${L} power · ${spotName} · ${d} lines</div><div class="m">Ra ${m.toFixed(2)} µm (mean of ${vals.length} sample${vals.length > 1 ? 's' : ''})</div>`
+                     + (vals.length > 1 ? `<div class="m">range ${lo.toFixed(2)}–${hi.toFixed(2)} µm</div>` : '') + `<div>${vals.map(o => o.s).join(', ')}</div>` });
+        }
+      }
+    });
+    cv._pts = pts;
+  }
+  // by level
+  { const cv = $('#cvLevels'), { c, w, h } = prep(cv);
+    const lv = ['Min','Avg','Max'], groups = {};
+    for (const o of ALL){ if (o.sp.mag !== 50) continue; const L = LEVEL[o.sp.sample]; (groups[L] = groups[L] || []).push(...o.s.procs.map(p => p.Ra).filter(Number.isFinite)); }
+    let top = 0; for (const k in groups) top = Math.max(top, ...groups[k]);
+    const { B, sx, sy } = frame(c, w, h, [-0.6, 2.6], [0, top * 1.1], { xcats:lv.map(l => l + ' power'), yl:'Ra per profile (µm)', yf:v => +v.toFixed(0) });
+    const pts = [];
+    lv.forEach((L, i) => {
+      const v = groups[L]; if (!v || !v.length) { c.fillStyle = css('--muted'); c.font = '11px "IBM Plex Sans", sans-serif'; c.textAlign = 'center'; c.fillText('no data', sx(i), sy(top * 0.05)); return; }
+      const col = css(LEVEL_VAR[L]);
+      let seed = 7 + i; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+      c.fillStyle = col; c.globalAlpha = .28;
+      for (const x of v){ c.beginPath(); c.arc(sx(i + (rnd() - .5) * .42), sy(x), 2.4, 0, 7); c.fill(); }
+      c.globalAlpha = 1;
+      const m = v.reduce((s, x) => s + x, 0) / v.length, sd = Math.sqrt(v.reduce((s, x) => s + (x - m) ** 2, 0) / Math.max(1, v.length - 1));
+      c.strokeStyle = css('--text'); c.lineWidth = 2; c.beginPath(); c.moveTo(sx(i), sy(m - sd)); c.lineTo(sx(i), sy(m + sd)); c.stroke();
+      for (const yv of [m - sd, m + sd]){ c.beginPath(); c.moveTo(sx(i) - 7, sy(yv)); c.lineTo(sx(i) + 7, sy(yv)); c.stroke(); }
+      c.fillStyle = col; c.strokeStyle = css('--surface'); c.lineWidth = 2; c.beginPath(); c.arc(sx(i), sy(m), 7, 0, 7); c.fill(); c.stroke();
+      c.fillStyle = css('--text'); c.font = '600 11px "IBM Plex Mono", monospace'; c.textAlign = 'left'; c.textBaseline = 'middle';
+      c.fillText(`${m.toFixed(2)} µm`, sx(i) + 12, sy(m));
+      const sams2 = Object.keys(BY_SAMPLE).filter(s => LEVEL[s] === L).join(', ');
+      pts.push({ x:sx(i), y:sy(m), html:`<div class="t">${L} power · ${sams2}</div><div class="m">Ra ${m.toFixed(2)} ± ${sd.toFixed(2)} µm</div><div>${v.length} profiles</div>` });
+    });
+    cv._pts = pts;
+  }
+  // scatter
+  { const cv = $('#cvScatter'), { c, w, h } = prep(cv);
+    const rows = []; for (const o of ALL) o.sp.lines.forEach((ln, i) => { const p = o.s.procs[i]; if (Number.isFinite(p.Rsk)) rows.push({ o, ln, p }); });
+    let x0 = Math.min(-0.5, ...rows.map(r => r.p.Rsk)) - 0.1, x1 = Math.max(0.5, ...rows.map(r => r.p.Rsk)) + 0.1;
+    let y1 = Math.max(4, ...rows.map(r => r.p.Rku)) * 1.05, y0 = Math.min(2, ...rows.map(r => r.p.Rku)) * 0.95;
+    const { B, sx, sy } = frame(c, w, h, [x0, x1], [y0, y1], { xl:'Rsk (skewness)', yl:'Rku (kurtosis)', xf:v => +v.toFixed(1), yf:v => +v.toFixed(1) });
+    c.setLineDash([4, 4]); c.strokeStyle = css('--border-strong'); c.lineWidth = 1;
+    c.beginPath(); c.moveTo(sx(0), B.t); c.lineTo(sx(0), B.b); c.stroke();
+    c.beginPath(); c.moveTo(B.l, sy(3)); c.lineTo(B.r, sy(3)); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css('--muted'); c.font = '11px "IBM Plex Sans", sans-serif'; c.textBaseline = 'top';
+    c.textAlign = 'left'; c.fillText('valleys dominate', B.l + 6, B.t + 2); c.textAlign = 'right'; c.fillText('peaks dominate', B.r - 4, B.t + 2);
+    c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText('Rku = 3 (random surface)', B.l + 6, sy(3) - 2);
+    const pts = [];
+    for (const r of rows){
+      const x = sx(r.p.Rsk), y = sy(r.p.Rku), col = css(LEVEL_VAR[LEVEL[r.o.sp.sample]]), sel = lineKey(r.o.sp, r.ln) === ST.lineKey;
+      c.beginPath(); c.arc(x, y, sel ? 6 : 4, 0, 7); c.fillStyle = col; c.globalAlpha = sel ? 1 : .75; c.fill(); c.globalAlpha = 1;
+      c.strokeStyle = sel ? css('--text') : css('--surface'); c.lineWidth = sel ? 2 : 1; c.stroke();
+      pts.push({ x, y, key:lineKey(r.o.sp, r.ln), html:`<div class="t">${r.o.sp.sample} ${r.o.sp.spot} ${r.ln.d}L${r.ln.n}</div><div class="m">Rsk ${r.p.Rsk.toFixed(2)} · Rku ${r.p.Rku.toFixed(2)}</div><div class="m">Ra ${r.p.Ra.toFixed(2)} µm</div><div>Click to open</div>` });
+    }
+    cv._pts = pts;
+  }
+}
+function renderTable(){
+  if (!ALL) return;
+  const rows = ALL.slice().sort((a, b) => samplesOrder().indexOf(a.sp.sample) - samplesOrder().indexOf(b.sp.sample) || SPOTS.indexOf(a.sp.spot) - SPOTS.indexOf(b.sp.spot));
+  let h = '<thead><tr><th>Sample</th><th>Level</th><th>Spot</th><th>Mag</th><th>Lines H+V</th><th>Ra H</th><th>Ra V</th><th>Ra</th><th>Rq</th><th>Rz</th><th>Rt</th><th>Rsk</th><th>Rku</th><th>Complete</th></tr></thead><tbody>';
+  for (const { sp, s } of rows){
+    h += `<tr class="click" data-id="${sp.id}" tabindex="0"><td>${sp.sample}</td><td>${LEVEL[sp.sample]}</td><td>${sp.spot}</td><td>x${sp.mag}</td><td>${s.nH}+${s.nV}</td><td>${fmt(s.RaH)}</td><td>${fmt(s.RaV)}</td><td>${fmt(s.Ra)}</td><td>${fmt(s.Rq)}</td><td>${fmt(s.Rz)}</td><td>${fmt(s.Rt)}</td><td>${fmt(s.Rsk)}</td><td>${fmt(s.Rku)}</td><td class="${sp.complete ? '' : 'bad'}">${sp.complete ? 'Yes' : '⚠ No'}</td></tr>`;
+  }
+  $('#tbl').innerHTML = h + '</tbody>';
+  $$('#tbl tr.click').forEach(tr => { const go = () => selectSpot(tr.dataset.id, true); tr.onclick = go; tr.onkeydown = e => { if (e.key === 'Enter') go(); }; });
+}
+function renderAnalysis(){
+  renderLineRead();
+  $('#explain').textContent = STAGE_TEXT[ST.stage];
+  if (ST.tab === 'anatomy') drawProfile();
+  if (ST.tab === 'dist') drawDist();
+  if (ST.tab === 'compare') renderCompare();
+}
+
+/* tooltips */
+const tip = $('#tip');
+function showTip(html, x, y){ tip.innerHTML = html; tip.hidden = false; const r = tip.getBoundingClientRect(); let L = x + 14, T = y + 14; if (L + r.width > innerWidth - 8) L = x - r.width - 14; if (T + r.height > innerHeight - 8) T = y - r.height - 14; tip.style.left = L + 'px'; tip.style.top = T + 'px'; }
+function hideTip(){ tip.hidden = true; }
+function hookPoints(id, onClickPt){
+  const cv = $(id);
+  cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
+    let best = null, bd = 18 * 18;
+    for (const p of (cv._pts || [])){ const d = (p.x - mx) ** 2 + (p.y - my) ** 2; if (d < bd){ bd = d; best = p; } }
+    cv.style.cursor = best && best.key ? 'pointer' : '';
+    best ? showTip(best.html, e.clientX, e.clientY) : hideTip();
+    cv._best = best;
+  });
+  cv.addEventListener('pointerleave', hideTip);
+  if (onClickPt) cv.addEventListener('click', () => { if (cv._best && cv._best.key) onClickPt(cv._best.key); });
+}
+
+/* ---------------------------------------------------------------- wiring */
+function wire(){
+  $('#cPlate').onclick = () => viewCamera('plate');
+  $('#cCube').onclick = () => ST.sample && viewCamera('cube');
+  $('#cSpot').onclick = () => ST.spotId && viewCamera('spot');
+  $$('#skinSeg button').forEach(b => b.onclick = () => { ST.skin = b.dataset.v; $$('#skinSeg button').forEach(x => x.classList.toggle('on', x === b)); $('#vpSurfLegend').hidden = ST.skin !== 'H'; buildSpot3D(); });
+  $$('#modeSeg button').forEach(b => b.onclick = () => { ST.mode = b.dataset.v; $$('#modeSeg button').forEach(x => x.classList.toggle('on', x === b)); buildSpot3D(); });
+  let exT = null;
+  $('#exag').oninput = e => { ST.exag = +e.target.value; $('#exagV').textContent = ST.exag; clearTimeout(exT); exT = setTimeout(buildSpot3D, 40); };
+  $('#traceBtn').onclick = startTrace; $('#traceBtn2').onclick = startTrace;
+  $('#playAnat').onclick = playSteps;
+  $$('#steps .stepbtn').forEach(b => b.onclick = () => { clearTimeout(ST.playTimer); setStage(+b.dataset.s); });
+  $$('#lamSeg button').forEach(b => b.onclick = () => {
+    ST.lambda = +b.dataset.v; $$('#lamSeg button').forEach(x => x.classList.toggle('on', x === b));
+    renderRail(); buildSpot3D(); renderAnalysis(); computeAll();
+  });
+  $$('#scopeSeg button').forEach(b => b.onclick = () => { ST.scope = b.dataset.v; $$('#scopeSeg button').forEach(x => x.classList.toggle('on', x === b)); drawDist(); });
+  $$('.tab').forEach(b => b.onclick = () => {
+    ST.tab = b.dataset.tab; $$('.tab').forEach(x => x.classList.toggle('on', x === b));
+    for (const t of ['anatomy','dist','compare','table']) $('#tab-' + t).hidden = t !== ST.tab;
+    if (ST.tab === 'compare' && (!ALL || allLambda !== ST.lambda)) computeAll();
+    renderAnalysis(); renderCompare();
+  });
+  const pc = $('#cvProfile');
+  pc.addEventListener('pointermove', e => {
+    const m = pc._map; if (!m) return;
+    const r = pc.getBoundingClientRect(), mx = e.clientX - r.left;
+    if (mx < m.B.l || mx > m.B.r) { ST.hover = null; hideTip(); drawProfile(); return; }
+    let lo = 0, hi = m.p.n - 1; while (hi - lo > 1){ const mid = (lo + hi) >> 1; if (m.X(mid) < mx) lo = mid; else hi = mid; }
+    ST.hover = { cv:'profile', i:lo }; drawProfile();
+    showTip(`<div class="m">${((m.p.lo + lo) * m.p.dx / 1000).toFixed(3)} mm</div><div class="m">${m.y[lo].toFixed(2)} µm</div>`, e.clientX, e.clientY);
+    if (!ST.trace && spotGroup && spotGroup.userData.sel) probeAt(lo);
+  });
+  pc.addEventListener('pointerleave', () => { ST.hover = null; hideTip(); if (!ST.trace) probe.visible = false; drawProfile(); });
+  hookPoints('#cvSpots'); hookPoints('#cvLevels'); hookPoints('#cvScatter', key => { const { sp } = findLine(key); selectSpot(sp.id, true); selectLine(key); });
+  for (const id of ['#cvHist', '#cvBear']){
+    const cv = $(id);
+    cv.addEventListener('pointermove', e => {
+      const m = cv._map; if (!m) return; const r = cv.getBoundingClientRect(), mx = e.clientX - r.left;
+      if (mx < m.B.l || mx > m.B.r) return hideTip();
+      if (m.pct){ const k = Math.max(0, Math.min(m.nb - 1, Math.floor(((mx - m.B.l) / (m.B.r - m.B.l)) * m.nb))); showTip(`<div class="m">${(m.mn + k*m.bw).toFixed(1)} to ${(m.mn + (k+1)*m.bw).toFixed(1)} µm</div><div class="m">${m.pct[k].toFixed(2)} % of points</div>`, e.clientX, e.clientY); }
+      else { const q = (mx - m.B.l) / (m.B.r - m.B.l), N = m.sorted.length; showTip(`<div class="m">${(q*100).toFixed(1)} % material</div><div class="m">above ${m.sorted[Math.round(q*(N-1))].toFixed(2)} µm</div>`, e.clientX, e.clientY); }
+    });
+    cv.addEventListener('pointerleave', hideTip);
+  }
+  let rT = null;
+  new ResizeObserver(() => { clearTimeout(rT); rT = setTimeout(renderAnalysis, 60); }).observe($('.panel'));
+  const rethemed = () => { renderRail(); renderAnalysis(); };
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rethemed);
+  new MutationObserver(rethemed).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+}
+
+/* ---------------------------------------------------------------- boot */
+fetch('data.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(data => {
+  D = data;
+  PLATE_IDS = Object.keys(D.plates).sort();
+  for (const pid of PLATE_IDS) for (const c of D.plates[pid]){ PLATE_CELLS.push({ ...c, plate:pid }); LEVEL[c.sample] = c.level; POS[c.sample] = c.pos; }
+  const unplaced = new Set();
+  D.spots = D.spots.filter(sp => { if (LEVEL[sp.sample]) return true; unplaced.add(sp.sample); return false; });
+  if (unplaced.size) console.warn('Spots skipped, sample not on any plate map:', [...unplaced].join(', '));
+  for (const sp of D.spots){ SPOT[sp.id] = sp; (BY_SAMPLE[sp.sample] = BY_SAMPLE[sp.sample] || []).push(sp); }
+  for (const s in BY_SAMPLE) BY_SAMPLE[s].sort((a, b) => SPOTS.indexOf(a.spot) - SPOTS.indexOf(b.spot));
+  levelSurfaces();
+  const sams = samplesOrder(), nLines = D.spots.reduce((s, sp) => s + sp.lines.length, 0);
+  const platesWithData = PLATE_IDS.filter(p => PLATE_CELLS.some(c => c.plate === p && BY_SAMPLE[c.sample]));
+  $('#subtitle').textContent = `LPBF plate${platesWithData.length > 1 ? 's' : ''} ${platesWithData.join(', ')} \u00b7 ${sams.length} samples · ${D.spots.length} microscope spots · ${nLines} measured height profiles · data built ${D.generated}`;
+  const lvCount = l => sams.filter(s => LEVEL[s] === l).length;
+  $('#keys').innerHTML = ['Min','Avg','Max'].map(l => `<span class="key"><span class="dot" style="background:${css(LEVEL_VAR[l])}"></span>${l} power \u00b7 ${lvCount(l)} sample${lvCount(l) === 1 ? '' : 's'}</span>`).join('');
+  $('#vpMsg').remove();
+  init3D(); wire();
+  // Deep link: #S05_P001_C1_x50 opens that spot directly. Options after '~': rough|raw, 2D|M, x10 (height factor),
+  // HL3 (profile), stage0..stage3 (anatomy step), plate|cube (zoom level).
+  const [hId, ...opts] = decodeURIComponent(location.hash.slice(1)).split('~');
+  if (hId && SPOT[hId]){
+    INSTANT = true;
+    for (const o of opts){
+      if (o === 'rough' || o === 'raw') ST.mode = o;
+      else if (o === '2D' || o === 'M' || o === 'H') ST.skin = o;
+      else if (/^x\d+$/.test(o)) { ST.exag = +o.slice(1); $('#exag').value = ST.exag; $('#exagV').textContent = ST.exag; }
+    }
+    $$('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === ST.mode));
+    $$('#skinSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === ST.skin));
+    $('#vpSurfLegend').hidden = ST.skin !== 'H';
+    selectSpot(hId, false);
+    const ln = opts.find(o => /^[HV]L\d+$/.test(o));
+    if (ln && SPOT[hId].lines.some(l => l.d + 'L' + l.n === ln)) selectLine(hId + '_' + ln);
+    const st = opts.find(o => /^stage[0-3]$/.test(o)); if (st) setStage(+st.slice(5), false);
+    viewCamera(opts.includes('plate') ? 'plate' : opts.includes('cube') ? 'cube' : 'spot'); INSTANT = false;
+  } else {
+    const first = BY_SAMPLE.S05 ? 'S05' : sams[0];
+    ST.sample = first;
+    selectSpot(BY_SAMPLE[first][0].id, false);
+    setTimeout(() => { viewCamera('cube'); setTimeout(() => viewCamera('spot'), REDUCED ? 0 : 1300); }, REDUCED ? 0 : 700);
+  }
+  $('#explain').textContent = STAGE_TEXT[ST.stage];
+  computeAll();
+}).catch(err => { $('#vpMsg').textContent = 'Could not load data.json (' + err.message + '). Start the twin with Launch_Twin.bat, or publish data.json next to this page.'; });
+};
+</script>
+<script>
+/* Load Three.js from the local vendor/ folder (offline desktop use); fall back to the CDN. */
+(function(){
+  const SRC = [
+    ['vendor/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'],
+    ['vendor/OrbitControls.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js']
+  ];
+  function add(src, ok, bad){ const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); }
+  function load(i){
+    if (i === SRC.length) return window.__startTwin();
+    add(SRC[i][0], () => load(i + 1), () => add(SRC[i][1], () => load(i + 1), () => {
+      const m = document.getElementById('vpMsg'); if (m) m.textContent = 'Could not load the 3D library (vendor/ folder missing and no internet).';
+    }));
+  }
+  load(0);
+})();
+</script>
